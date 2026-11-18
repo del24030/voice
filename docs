@@ -1,0 +1,256 @@
+Absolutely. Let's establish a central project reference so you don't have to dig through old conversations to remember what we're building.
+
+# OpenReceptionist – Master Project Summary
+
+**Project:** AI-Powered Real-Time Receptionist\
+**Hardware:** NVIDIA DGX Spark\
+**Primary goal:** Build an intelligent AI receptionist that can answer phone calls, understand callers, have natural conversations, and handle receptionist tasks.
+
+## 1\. Our technology stack
+
+These are the technologies we've agreed to use.
+
+| Component | Technology | Purpose |
+| --- | --- | --- |
+| AI Brain | Qwen 3.8 – 35B | Reasoning, understanding, conversation management |
+| Speech-to-Text | Qwen3 STT | Recognizes what callers say |
+| Text-to-Speech | Fish Audio Drama 3 | Generates natural receptionist speech |
+| Real-time infrastructure | LiveKit | Manages audio, calls, and conversations |
+| Hardware | NVIDIA DGX Spark | Runs the AI models locally |
+
+**Important:** We are not using Chatterbox, Whisper, or other experimental TTS models. Our focus is the agreed stack above.
+
+## 2\. Project directory locations
+
+These are the important paths we've discovered.
+
+### Main receptionist project
+
+bash
+
+```bash
+~/cse455-receptionist/
+```
+
+Virtual environments:
+
+bash
+
+```bash
+~/cse455-receptionist/.venv-livekit/
+~/cse455-receptionist/.venv-stt/
+~/cse455-receptionist/.venv-tts/
+```
+
+Our primary LiveKit environment is:
+
+bash
+
+```bash
+~/cse455-receptionist/.venv-livekit/
+```
+
+### Fish Audio installation
+
+bash
+
+```bash
+~/fish-audio/dgxspark.fish-speech/
+```
+
+Fish Audio virtual environment:
+
+bash
+
+```bash
+~/fish-audio/dgxspark.fish-speech/.venv-chat/
+```
+
+Fish Audio API:
+
+text
+
+```text
+http://localhost:8080
+```
+
+Useful API endpoint:
+
+text
+
+```text
+http://localhost:8080/v1/tts
+```
+
+Fish Audio model:
+
+text
+
+```text
+fishaudio/drama-3
+```
+
+## 3\. System architecture
+
+This is how everything connects:
+
+text
+
+```text
+             INCOMING PHONE CALL
+                      |
+                      ▼
+                 LIVEKIT
+              Audio Management
+                      |
+                      ▼
+                 QWEN3 STT
+             Speech Recognition
+                      |
+                      ▼
+               QWEN 3.8 35B
+                  AI BRAIN
+                      |
+             ┌────────┴────────┐
+             │                 │
+         Reasoning         Memory
+             │                 │
+             └────────┬────────┘
+                      |
+                      ▼
+              FISH AUDIO DRAMA 3
+                Speech Generation
+                      |
+                      ▼
+                   LIVEKIT
+                 Audio Output
+                      |
+                      ▼
+                   CALLER
+```
+
+## 4\. Features we want to implement
+
+Our receptionist should eventually support:
+
+- Natural, human-like conversations.
+- Real-time speech recognition.
+- Expressive voice generation.
+- Conversation history and memory.
+- Caller identification and information collection.
+- Appointment scheduling.
+- Frequently asked questions.
+- Call transfers.
+- Handling interruptions.
+- Context-aware responses.
+- Graceful handling of misunderstandings.
+
+## 5\. Development roadmap
+
+We'll build in this order.
+
+| Phase | Task | Status |
+| --- | --- | --- |
+| 1 | Inspect existing project and environments | 🔄 Starting |
+| 2 | Get Qwen 3.8 AI brain running | ⏳ |
+| 3 | Integrate Qwen3 STT | ⏳ |
+| 4 | Integrate Fish Audio Drama 3 | ⏳ |
+| 5 | Connect everything through LiveKit | ⏳ |
+| 6 | Implement streaming and interruptions | ⏳ |
+| 7 | Implement conversation memory | ⏳ |
+| 8 | Implement receptionist functionality | ⏳ |
+| 9 | Full end-to-end testing | ⏳ |
+
+## 6\. Important commands
+
+You can use these whenever you return to the project.
+
+**Open receptionist project:**
+
+bash
+
+```bash
+cd ~/cse455-receptionist
+```
+
+**Activate LiveKit environment:**
+
+bash
+
+```bash
+source .venv-livekit/bin/activate
+```
+
+**Open Fish Audio project:**
+
+bash
+
+```bash
+cd ~/fish-audio/dgxspark.fish-speech
+```
+
+**Check Fish Audio API:**
+
+bash
+
+```bash
+curl -s http://localhost:8080/v1/health
+```
+
+**Check GPU:**
+
+bash
+
+```bash
+nvidia-smi
+```
+
+---
+
+# 7\. Our immediate next step
+
+We haven't yet verified the exact Qwen 3.8 serving setup or completed integration of the components.
+
+Before writing new code, we'll inspect the existing receptionist project and identify what already works.
+
+Our first command:
+
+bash
+
+```bash
+cd ~/cse455-receptionist
+
+find . -maxdepth 2 -type f \
+  ! -path './.venv*/*' \
+  ! -path './__pycache__/*' \
+  | sort | head -150
+```
+
+We'll use the results to determine what needs building.
+
+---
+
+## 8\. Project rules going forward
+
+To avoid losing track again:
+
+1. Keep all receptionist integration code inside `~/cse455-receptionist/`.
+2. Keep Fish Audio in its existing directory.
+3. Don't create unnecessary virtual environments.
+4. Don't reinstall working models without a reason.
+5. Document every major change.
+6. Maintain a central project progress document.
+
+**I recommend creating this file in your main project:**
+
+bash
+
+```bash
+nano ~/cse455-receptionist/PROJECT_STATUS.md
+```
+
+Save this summary there.
+
+That way, even if you start a completely new ChatGPT conversation, you can share `PROJECT_STATUS.md` and we'll have the architecture, directory locations, technology choices, and development progress in one place.
+
+**Our mission: Build one complete, real-time AI receptionist on the DGX Spark using Qwen 3.8 + Qwen3 STT + Fish Audio Drama 3 + LiveKit.**
