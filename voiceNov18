@@ -1,0 +1,838 @@
+Absolutely. Let's make this a proper project handoff so you can push it to GitHub and have a permanent cloud backup.
+
+I'm going to give you a complete technical handoff, not just a short summary. Another AI should be able to read it and continue development without making you explain the project all over again.
+
+# 1\. GitHub repository structure
+
+I recommend organizing the repository like this:
+
+text
+
+```text
+rexburg-cuts-ai/
+│
+├── README.md
+├── PROJECT_HANDOFF.md
+├── PROJECT_STATUS.md
+├── ARCHITECTURE.md
+├── TECH_STACK.md
+├── NEXT_STEPS.md
+│
+├── receptionist/
+│   ├── qwen_fish_receptionist.py
+│   ├── fishapi.py
+│   └── test_fish.py
+│
+├── livekit/
+│   ├── livekit_receptionist.py
+│   └── test_livekit_qwen.py
+│
+├── documentation/
+│   ├── HARDWARE.md
+│   ├── INSTALLATION.md
+│   └── TROUBLESHOOTING.md
+│
+└── .gitignore
+```
+
+This is the proposed documentation structure. Don't move your existing scripts yet; we'll organize them after backing them up.
+
+# 2\. Main project handoff
+
+Create the file:
+
+`PROJECT_HANDOFF.md`
+
+Paste this entire document:
+
+PROJECT HANDOFF — Rexburg Cuts AI Receptionist
+
+# REXBURG CUTS — AI RECEPTIONIST
+
+## Complete Technical Project Handoff
+
+Last updated: November 18, 2026
+
+Project status: Working initial prototype
+
+Hardware: NVIDIA DGX Spark (GB10)
+
+---
+
+# 1\. PROJECT OVERVIEW
+
+We are developing a locally hosted AI receptionist for a fictional barbershop called Rexburg Cuts.
+
+The goal is to create a natural-sounding AI receptionist capable of:
+
+- Answering incoming calls.
+- Understanding customer speech.
+- Responding naturally.
+- Answering business questions.
+- Checking business hours.
+- Scheduling appointments.
+- Managing customer information.
+- Handling interruptions.
+- Maintaining conversational context.
+
+The system should run primarily on local hardware using locally hosted AI models.
+
+Avoid unnecessary cloud AI dependencies.
+
+The project is being developed on an NVIDIA DGX Spark.
+
+# 2\. CORE ARCHITECTURE
+
+The selected technology stack is:
+
+| Component | Technology | Purpose |
+| --- | --- | --- |
+| AI Brain | Qwen 3.8 27B | Conversation and reasoning |
+| Speech Recognition | Local STT to be integrated | Customer speech transcription |
+| Voice Generation | Fish Audio Drama 3 | Natural speech generation |
+| Real-time Communications | LiveKit | Audio transport and conversation management |
+| Model Serving | Ollama | Local LLM inference |
+| Hardware | NVIDIA DGX Spark | Local AI compute |
+
+IMPORTANT ARCHITECTURAL DECISIONS:
+
+- Qwen 3.8 is the selected AI brain.
+- Fish Audio Drama 3 is the selected voice-generation system.
+- LiveKit is the selected real-time communications framework.
+- Whisper is not part of the intended architecture.
+- Chatterbox is not part of the intended architecture.
+- Do not replace these components without discussing the change first.
+
+Speech recognition remains an open integration task. Investigate a compatible local Qwen-based STT implementation rather than assuming the text-generation model itself can directly transcribe audio.
+
+# 3\. HARDWARE ENVIRONMENT
+
+Machine: NVIDIA DGX Spark
+
+GPU: NVIDIA GB10
+
+GPU compute capability: 12.1
+
+System RAM: Approximately 128 GB
+
+PyTorch in Fish Audio environment:
+
+2.10.0+cu130
+
+CUDA: 13.0
+
+The Fish Audio environment previously displayed a CUDA capability warning because its PyTorch build reported support through capability 12.0.
+
+Despite this warning, Fish Audio successfully loaded and generated audio.
+
+Do not assume the warning means the installation is broken.
+
+# 4\. INSTALLED AI MODELS
+
+Ollama models currently installed:
+
+- receptionist:latest
+- qwen3.8:27b
+- qwen3.6:35b-a3b
+- ornith-1.5:35b
+- gpt-oss:20b
+- gemma4:latest
+- embeddinggemma:latest
+
+The active receptionist model is:
+
+receptionist:latest
+
+This model is based on Qwen 3.8 27B, quantized Q4\_K\_M.
+
+Ollama API:
+
+http://127.0.0.1:11434
+
+OpenAI-compatible API:
+
+http://127.0.0.1:11434/v1
+
+Use the actual model name returned by:
+
+ollama list
+
+# 5\. FISH AUDIO INSTALLATION
+
+Repository:
+
+\~/fish-audio/dgxspark.fish-speech
+
+Model:
+
+fishaudio/drama-3
+
+Python environment:
+
+\~/fish-audio/dgxspark.fish-speech/environments/dgx-spark/.venv
+
+Startup command:
+
+cd \~/fish-audio/dgxspark.fish-speech
+
+./start.sh --model fishaudio/drama-3
+
+API:
+
+http://127.0.0.1:8080
+
+Health endpoint:
+
+GET /v1/health
+
+TTS defaults endpoint:
+
+GET /v1/tts/defaults
+
+Expected health response:
+
+{"status":"ok"}
+
+Expected model family:
+
+drama3
+
+Fish Audio successfully loaded its model, warmed up, and generated speech.
+
+The generated audio was tested and listened to successfully.
+
+IMPORTANT:
+
+Fish Audio takes time to initialize.
+
+Do not assume it has failed simply because the initial startup appears slow.
+
+Wait for:
+
+Application startup complete.
+
+and:
+
+Uvicorn running on http://0.0.0.0:8080
+
+Check availability using:
+
+curl http://127.0.0.1:8080/v1/health
+
+# 6\. PROJECT DIRECTORY
+
+Main project:
+
+\~/cse455-receptionist
+
+Python environment:
+
+\~/cse455-receptionist/.venv-livekit
+
+Run project scripts using:
+
+.venv-livekit/bin/python filename.py
+
+The environment contains:
+
+- livekit
+- livekit-agents
+- livekit-api
+- livekit-plugins-openai
+- livekit-plugins-silero
+- openai
+
+# 7\. IMPORTANT PROJECT FILES
+
+qwen\_fish\_receptionist.py
+
+The current working prototype.
+
+Connects Qwen through Ollama and Fish Audio through its local API.
+
+This is the most important file to inspect before making changes.
+
+fishapi.py
+
+Fish Audio API client copied from the Fish Speech repository.
+
+Provides methods for:
+
+- Checking server health.
+- Reading TTS defaults.
+- Generating speech.
+- Streaming generated audio.
+- Managing voice references.
+
+test\_fish.py
+
+Tests the Fish Audio connection and generates a sample WAV.
+
+livekit\_receptionist.py
+
+Older LiveKit implementation.
+
+WARNING:
+
+This implementation still references Whisper and Chatterbox.
+
+It is not the final architecture.
+
+test\_livekit\_qwen.py
+
+Earlier test of Qwen through LiveKit.
+
+receptionist.py
+
+Earlier command-line receptionist implementation.
+
+Contains business-hour validation logic.
+
+# 8\. CURRENT WORKING PROTOTYPE
+
+The first working prototype is:
+
+qwen\_fish\_receptionist.py
+
+Launch:
+
+cd \~/cse455-receptionist
+
+.venv-livekit/bin/python qwen\_fish\_receptionist.py
+
+The prototype successfully:
+
+1. Connects to Fish Audio.
+2. Checks Fish Audio health.
+3. Reads model defaults.
+4. Connects to Qwen through Ollama.
+5. Generates receptionist responses.
+6. Sends response text to Fish Audio.
+7. Generates WAV audio.
+
+We tested real conversational exchanges.
+
+Example:
+
+Customer: Hey, I'd like to get a haircut.
+
+Customer: What's your schedule?
+
+Receptionist: We're open Monday through Saturday from 9 AM to 6 PM, and we're closed on Sundays.
+
+Customer: I'd like to go this Sunday.
+
+Receptionist: Oh bummer, we're actually closed on Sundays\! Would Monday through Saturday work better for you?
+
+The system demonstrated basic conversational understanding and business-rule awareness.
+
+# 9\. BUSINESS INFORMATION
+
+Business name:
+
+Rexburg Cuts
+
+Business hours:
+
+Monday through Saturday: 9 AM – 6 PM
+
+Sunday: Closed
+
+Services:
+
+Haircut: $25 30 minutes
+
+Beard trim: $15
+
+IMPORTANT:
+
+This is currently a demonstration.
+
+There is no real booking calendar connected.
+
+The receptionist must NEVER:
+
+- Claim an appointment was booked.
+- Claim calendar availability was checked.
+- Invent contact information.
+- Claim to have contacted employees.
+- Collect unnecessary sensitive information.
+
+# 10\. CURRENT KNOWN ISSUES
+
+Issue 1: Occasional empty Qwen responses.
+
+During testing, Qwen occasionally returned:
+
+Qwen returned an empty response
+
+Investigate response handling, Ollama output, timeouts, and model generation settings.
+
+Issue 2: Audio playback.
+
+Fish Audio generates WAV files successfully.
+
+The next task is to automatically play generated audio through the computer's speakers.
+
+Potential Python dependencies:
+
+sounddevice soundfile
+
+Issue 3: Speech recognition.
+
+No speech-recognition component is currently integrated into the working Qwen + Fish prototype.
+
+The intended solution should be local.
+
+Do not automatically reintroduce Whisper.
+
+Issue 4: LiveKit integration.
+
+LiveKit packages are installed.
+
+An older implementation exists.
+
+However, the current working Qwen + Fish prototype is not yet connected to LiveKit.
+
+# 11\. DEVELOPMENT ROADMAP
+
+PHASE 1 — Stabilize current prototype
+
+- Fix empty Qwen responses.
+- Implement automatic WAV playback.
+- Improve conversational consistency.
+- Improve error handling.
+- Preserve working functionality.
+
+PHASE 2 — Speech recognition
+
+- Investigate local Qwen-compatible STT.
+- Test transcription independently.
+- Measure transcription latency.
+- Connect transcription to the receptionist.
+
+PHASE 3 — LiveKit integration
+
+- Build a proper LiveKit agent.
+- Connect microphone input.
+- Implement turn detection.
+- Connect Qwen.
+- Connect Fish Audio.
+- Return generated speech through LiveKit.
+- Support interruptions.
+
+PHASE 4 — Receptionist intelligence
+
+- Improve conversation memory.
+- Add structured business information.
+- Implement service selection.
+- Add business-hours validation.
+- Handle appointment requests.
+
+PHASE 5 — Actual booking system
+
+- Integrate a calendar.
+- Check real availability.
+- Create appointments.
+- Prevent double bookings.
+- Provide appointment confirmations.
+
+PHASE 6 — Telephony
+
+- Connect a phone number.
+- Handle incoming calls.
+- Manage multiple customers.
+- Add logging and monitoring.
+
+# 12\. RULES FOR FUTURE AI DEVELOPERS
+
+Any AI assistant continuing this project should follow these rules:
+
+1. Read this document before modifying code.
+2. Inspect the actual project files before proposing changes.
+3. Preserve the working Qwen + Fish Audio integration.
+4. Do not reinstall working models unnecessarily.
+5. Do not introduce Whisper or Chatterbox.
+6. Do not replace Qwen 3.8 without approval.
+7. Do not replace Fish Audio Drama 3 without approval.
+8. Do not assume LiveKit integration is complete.
+9. Test each component independently.
+10. Make incremental changes.
+11. Never overwrite working files without creating backups.
+12. Provide complete terminal commands that can be copied and executed.
+13. Explain which directory and Python environment each command uses.
+14. Verify services before attempting integration.
+15. Update this handoff whenever major architectural changes occur.
+
+# 13\. IMMEDIATE NEXT TASK
+
+Start here:
+
+cd \~/cse455-receptionist
+
+Inspect:
+
+qwen\_fish\_receptionist.py
+
+Then:
+
+1. Fix occasional empty Qwen responses.
+2. Add automatic audio playback.
+3. Verify the complete Qwen-to-Fish pipeline.
+4. Begin designing local speech recognition.
+5. Integrate LiveKit only after the individual components are stable.
+
+DO NOT REBUILD THE PROJECT FROM SCRATCH.
+
+The first working prototype already exists.
+
+Build on it.
+
+---
+
+END OF PROJECT HANDOFF
+
+# 3\. Other documentation files
+
+I'd also create these four smaller files.
+
+### README.md
+
+GitHub README
+
+# Rexburg Cuts AI Receptionist
+
+A locally hosted AI receptionist powered by Qwen 3.8, Fish Audio Drama 3, and LiveKit.
+
+## Hardware
+
+NVIDIA DGX Spark (GB10).
+
+## Technology Stack
+
+- Qwen 3.8 27B — AI conversation engine.
+- Fish Audio Drama 3 — Speech generation.
+- LiveKit — Real-time voice communications.
+- Ollama — Local LLM serving.
+- Local speech recognition — Integration pending.
+
+## Current Status
+
+The initial Qwen + Fish Audio prototype is operational.
+
+The system can generate receptionist responses and convert them into natural speech.
+
+LiveKit integration and speech recognition are still under development.
+
+## Documentation
+
+- `PROJECT_HANDOFF.md` — Complete technical handoff.
+- `PROJECT_STATUS.md` — Current development status.
+- `ARCHITECTURE.md` — System architecture.
+- `TECH_STACK.md` — Technologies and services.
+- `NEXT_STEPS.md` — Development roadmap.
+
+## Development Principle
+
+Build incrementally. Preserve working functionality. Keep AI inference local wherever possible.
+
+### PROJECT\_STATUS.md
+
+Project Status
+
+# Project Status
+
+Last updated: November 18, 2026
+
+## Working
+
+- [x]DGX Spark environment configured.
+- [x]Ollama installed and running.
+- [x]Qwen 3.8 model available.
+- [x]Fish Audio Drama 3 installed.
+- [x]Fish Audio API operational.
+- [x]Fish Audio speech generation tested.
+- [x]Fish Audio API client integrated.
+- [x]Qwen + Fish prototype operational.
+- [x]Basic receptionist conversations tested.
+
+## In Progress
+
+- [ ]Fix occasional empty Qwen responses.
+- [ ]Automatic audio playback.
+- [ ]Local speech recognition.
+- [ ]LiveKit integration.
+
+## Planned
+
+- [ ]Real-time voice conversations.
+- [ ]Interruptions and turn detection.
+- [ ]Conversation memory improvements.
+- [ ]Appointment scheduling.
+- [ ]Calendar integration.
+- [ ]Telephony integration.
+
+## Current Working Prototype
+
+`qwen_fish_receptionist.py`
+
+## Critical Services
+
+| Service | Port |
+| --- | --- |
+| Ollama | 11434 |
+| Fish Audio | 8080 |
+| LiveKit | Not configured yet |
+
+### ARCHITECTURE.md
+
+System Architecture
+
+# System Architecture
+
+## Target Architecture
+
+Customer | v LiveKit | v Local Speech Recognition | v Qwen 3.8 27B | v Receptionist Logic | v Fish Audio Drama 3 | v LiveKit | v Customer
+
+## Component Responsibilities
+
+### Qwen 3.8
+
+Handles:
+
+- Conversation.
+- Reasoning.
+- Customer questions.
+- Business information.
+- Receptionist responses.
+
+### Fish Audio Drama 3
+
+Handles:
+
+- Text-to-speech.
+- Natural voice generation.
+- Audio output.
+
+### LiveKit
+
+Handles:
+
+- Real-time audio transport.
+- Voice sessions.
+- Turn-taking.
+- Interruptions.
+
+### Speech Recognition
+
+Not integrated yet.
+
+Must support local inference and connect to the LiveKit audio pipeline.
+
+## Local Services
+
+Ollama: http://127.0.0.1:11434
+
+Fish Audio: http://127.0.0.1:8080
+
+### NEXT\_STEPS.md
+
+Next Development Tasks
+
+# Next Development Tasks
+
+## Priority 1: Stabilization
+
+1. Inspect qwen\_fish\_receptionist.py.
+2. Fix empty Qwen responses.
+3. Implement WAV playback.
+4. Test repeated conversations.
+5. Improve error handling.
+
+## Priority 2: Speech Recognition
+
+1. Research compatible local Qwen STT models.
+2. Test transcription.
+3. Measure latency.
+4. Integrate with the receptionist.
+
+## Priority 3: LiveKit
+
+1. Build a clean LiveKit agent.
+2. Connect microphone input.
+3. Connect local STT.
+4. Connect Qwen.
+5. Connect Fish Audio.
+6. Implement audio output.
+7. Implement interruptions.
+
+## Priority 4: Business Features
+
+1. Improve receptionist knowledge.
+2. Add service selection.
+3. Validate appointment times.
+4. Integrate a booking calendar.
+5. Add appointment management.
+
+## Priority 5: Phone Integration
+
+1. Select telephony provider.
+2. Connect incoming calls.
+3. Test real-world call quality.
+4. Implement logging and monitoring.
+
+---
+
+# 4\. Push everything to GitHub
+
+Once you've created those files, open your terminal.
+
+First, go to the project:
+
+bash
+
+```bash
+cd ~/cse455-receptionist
+```
+
+Create a Git repository if one doesn't already exist:
+
+bash
+
+```bash
+git init
+```
+
+Create a `.gitignore`:
+
+bash
+
+```bash
+cat > .gitignore <<'EOF'
+.venv/
+.venv-*/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+*.wav
+*.m4a
+*.mp3
+*.log
+.DS_Store
+EOF
+```
+
+**Important:** Never upload `.env.local`, API keys, passwords, or other credentials to GitHub. Keep the actual environment file private.
+
+Add the documentation files you created and your working Python scripts.
+
+Before committing, check:
+
+bash
+
+```bash
+git status
+```
+
+Then:
+
+bash
+
+```bash
+git add README.md PROJECT_HANDOFF.md PROJECT_STATUS.md ARCHITECTURE.md TECH_STACK.md NEXT_STEPS.md .gitignore qwen_fish_receptionist.py fishapi.py test_fish.py
+```
+
+Commit:
+
+bash
+
+```bash
+git commit -m "Initial Rexburg Cuts AI receptionist handoff"
+```
+
+## 5\. Create your GitHub repository
+
+Go to:
+
+[GitHub](<https://github.com/?utm_source=chatgpt.com>)
+
+1. Sign in.
+2. Click **New repository**.
+3. Name it `rexburg-cuts-ai`.
+4. Set it to **Private**.
+5. Do not initialize it with a README (we already have one).
+6. Create the repository.
+
+GitHub will show you a repository address.
+
+Use that address here:
+
+bash
+
+```bash
+git branch -M main
+
+git remote add origin YOUR_GITHUB_REPOSITORY_ADDRESS
+
+git push -u origin main
+```
+
+Replace `YOUR_GITHUB_REPOSITORY_ADDRESS` with the actual address GitHub provides.
+
+---
+
+## 6\. One important thing about the cloud backup
+
+GitHub will preserve your source code and documentation, but **it will not automatically upload your 48 GB model cache or the entire Fish Audio installation**.
+
+That's intentional.
+
+Keep the following on your DGX Spark:
+
+- Fish Audio model weights.
+- Ollama model weights.
+- Python virtual environments.
+- Large audio recordings.
+
+Keep GitHub for:
+
+- Source code.
+- Project documentation.
+- Configuration templates.
+- Installation instructions.
+- Development history.
+
+This keeps the repository manageable.
+
+## 7\. How another AI should resume
+
+When you start a new ChatGPT conversation or use another AI coding assistant, give it this instruction:
+
+AI Developer Handoff Instructions
+
+I'm continuing development of my Rexburg Cuts AI Receptionist project.
+
+First, read the README.md and PROJECT\_HANDOFF.md files in my GitHub repository.
+
+Then inspect the existing source code, especially qwen\_fish\_receptionist.py.
+
+Do not rebuild anything from scratch. We already have a working Qwen 3.8 + Fish Audio Drama 3 prototype running on an NVIDIA DGX Spark.
+
+Our architecture uses:
+
+- Qwen 3.8 27B for the AI brain.
+- Fish Audio Drama 3 for voice generation.
+- LiveKit for real-time voice communications.
+- Local speech recognition, still to be integrated.
+
+Do not introduce Whisper or Chatterbox.
+
+Your job is to continue from the existing implementation, preserve working functionality, and make incremental improvements.
+
+Our immediate priorities are fixing occasional empty Qwen responses, implementing automatic audio playback, and then integrating local speech recognition and LiveKit.
+
+Always inspect existing files before suggesting modifications.
+
+**My recommendation:** Make the repository private for now. Once this is pushed, you'll have a central project record that another AI can use to continue development without starting over.
