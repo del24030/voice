@@ -1,0 +1,531 @@
+PROJECT HANDOFF: REXBURG CUTS AI RECEPTIONIST
+1. Project Overview
+
+I'm building an AI-powered voice receptionist for a fictional barbershop called Rexburg Cuts.
+
+The goal is to create a natural, real-time conversational receptionist that customers can speak to through a web browser.
+
+The receptionist should:
+
+Greet customers naturally.
+Answer questions about services and pricing.
+Explain business hours.
+Handle appointment inquiries conversationally.
+Eventually integrate with an actual booking calendar.
+Speak naturally with a high-quality human-like voice.
+Understand spoken English accurately.
+Support interruptions and natural conversation.
+
+This is a university computing project running on a remote Linux machine.
+
+IMPORTANT: Continue from the existing project. Do not unnecessarily rebuild components that already work.
+
+2. Hardware and Environment
+
+Remote machine:
+
+Hostname: spark-75a3
+Username: cse455student
+Architecture: ARM64 (aarch64)
+Python: 3.12
+Node.js: v22.16.0
+npm: 10.9.2
+
+Project directory:
+
+~/cse455-receptionist
+
+Python virtual environment:
+
+~/cse455-receptionist/.venv-livekit
+
+Node.js is installed manually under:
+
+~/nodejs/node-v22.16.0-linux-arm64/
+
+Node.js was added to PATH in ~/.bashrc.
+
+Node and npm now work.
+
+3. AI Models
+Language Model
+
+Ollama is installed and working.
+
+Current model:
+
+qwen3.8:27b
+
+Model details:
+
+Architecture: qwen35
+Parameters: 27.3B
+Quantization: Q4_K_M
+Context length: 262144
+Tools capability supported.
+
+Ollama runs locally:
+
+http://127.0.0.1:11434
+
+The OpenAI-compatible API works.
+
+Test performed:
+
+POST http://127.0.0.1:11434/api/chat
+
+The model successfully generated receptionist responses.
+
+Example:
+
+Customer: "Hello, how much is a haircut?"
+
+Response: "Hey there, welcome to Rexburg Cuts! A haircut is $25 and takes about 30 minutes."
+
+The model works correctly.
+
+Speech Recognition
+
+Qwen3-ASR-1.7B is installed.
+
+Location:
+
+~/cse455-receptionist/third_party/qwen-asr
+
+Executable:
+
+qwen_asr_cuda
+
+Model:
+
+qwen3-asr-1.7b
+
+Tested successfully using:
+
+bash
+cd ~/cse455-receptionist/third_party/qwen-asr
+
+ffmpeg -i samples/jfk.wav \
+-f s16le -ar 16000 -ac 1 - 2>/dev/null | \
+./qwen_asr_cuda \
+-d qwen3-asr-1.7b \
+--stdin --silent
+
+
+It successfully transcribed:
+
+"And so, my fellow Americans, ask not what your country can do for you. Ask what you can do for your country."
+
+This confirms Qwen ASR works.
+
+4. Speech Generation — IMPORTANT ARCHITECTURE CHANGE
+
+Previously, the project used:
+
+Fish Audio for text-to-speech.
+Chatterbox in an older implementation.
+Faster-Whisper for speech recognition.
+
+We decided to REMOVE Fish Audio, Chatterbox, and Faster-Whisper completely from the final architecture.
+
+The intended architecture is:
+
+Qwen3-ASR-1.7B: speech recognition.
+Qwen3.8:27B: conversational intelligence.
+A replacement natural-sounding TTS engine: speech generation.
+LiveKit: real-time voice communication.
+
+The replacement TTS engine has NOT yet been selected and integrated.
+
+The priority is finding a high-quality natural English voice that works on the available ARM64 Linux environment.
+
+Do not assume a particular TTS engine is already installed.
+
+Investigate compatibility before recommending installation.
+
+5. Existing Python Files
+
+The project currently contains:
+
+text
+cse455-receptionist/
+│
+├── chatterbox_bridge.py
+├── fishapi.py
+├── fish_test.wav
+├── input.m4a
+├── livekit_receptionist.py
+├── qwen_fish_receptionist.py
+├── receptionist.py
+├── receptionist_v1.py
+├── receptionist_response.wav
+├── receptionist-test.wav
+├── test_fish.py
+├── test_livekit_qwen.py
+├── whisper_bridge.py
+├── transcribe.py
+├── token_server.py
+│
+├── third_party/
+│   └── qwen-asr/
+│
+├── frontend/
+│
+├── .venv-livekit/
+├── .venv-stt/
+└── .venv-tts/
+
+
+Some files are legacy implementations.
+
+The main file is:
+
+livekit_receptionist.py
+
+It currently contains:
+
+QwenASR class.
+FishTTS class.
+FishStream class.
+LiveKit AgentServer.
+Ollama integration.
+Receptionist instructions.
+
+The current implementation still uses Fish Audio.
+
+The file was modified to use Qwen ASR directly instead of Faster-Whisper.
+
+The main file has NOT yet been fully migrated to the final architecture.
+
+6. Current livekit_receptionist.py Architecture
+
+Current configuration:
+
+python
+ASR_BINARY = "/home/cse455student/cse455-receptionist/third_party/qwen-asr/qwen_asr_cuda"
+
+ASR_MODEL = "/home/cse455student/cse455-receptionist/third_party/qwen-asr/qwen3-asr-1.7b"
+
+OLLAMA_URL = "http://127.0.0.1:11434/v1"
+
+OLLAMA_MODEL = "qwen3.8:27b"
+
+
+QwenASR:
+
+Receives LiveKit audio frames.
+Converts audio to mono.
+Resamples to 16 kHz.
+Runs the Qwen ASR executable.
+Returns the transcript to LiveKit.
+
+LLM:
+
+Uses LiveKit's OpenAI-compatible Ollama integration.
+Model: qwen3.8:27b.
+Temperature: 0.3.
+
+TTS:
+
+Still uses Fish Audio.
+Must be replaced.
+
+LiveKit:
+
+Uses AgentServer.
+Uses AgentSession.
+Uses Silero VAD.
+Supports interruptions.
+Connects to LiveKit Cloud.
+7. LiveKit Cloud
+
+LiveKit Cloud is configured.
+
+Environment variables are stored in:
+
+~/cse455-receptionist/.env.local
+
+Variables:
+
+env
+LIVEKIT_URL=...
+LIVEKIT_API_KEY=...
+LIVEKIT_API_SECRET=...
+
+
+IMPORTANT: Never print, expose, or commit these credentials.
+
+A Python authentication test succeeded:
+
+text
+SUCCESS: LiveKit authentication works!
+Rooms found: 0
+
+
+This confirms the credentials and API connection work.
+
+The project also has a token server:
+
+token_server.py
+
+It runs on:
+
+127.0.0.1:8000
+
+A token-generation test succeeded:
+
+Token generated: True
+
+The token server was already running when another instance was started, causing:
+
+OSError: [Errno 98] Address already in use
+
+This was not an authentication failure.
+
+The token endpoint is therefore apparently functional.
+
+8. React Frontend
+
+The frontend was created successfully.
+
+Location:
+
+~/cse455-receptionist/frontend
+
+Created using Vite:
+
+bash
+npm create vite@latest . -- --template react
+
+
+Dependencies installed:
+
+bash
+npm install
+npm install livekit-client
+
+
+Vite successfully started:
+
+text
+VITE v8.3.8 ready
+
+Local: http://localhost:5173/
+
+
+Frontend files:
+
+text
+frontend/
+├── package.json
+├── package-lock.json
+├── index.html
+├── node_modules/
+└── src/
+    ├── App.jsx
+    ├── App.css
+    ├── index.css
+    ├── main.jsx
+    └── assets/
+
+
+The React frontend has not yet been developed into the actual receptionist interface.
+
+The intention is to create:
+
+A clean barbershop-themed interface.
+A connect/disconnect button.
+A microphone/voice conversation interface.
+LiveKit room connection.
+Conversation status.
+Possibly transcript display.
+
+The browser should connect to LiveKit using a token obtained from the Python token server.
+
+9. Business Information
+
+The receptionist system prompt should use:
+
+Business: Rexburg Cuts
+
+Hours:
+
+Monday: 9 AM – 6 PM
+Tuesday: 9 AM – 6 PM
+Wednesday: 9 AM – 6 PM
+Thursday: 9 AM – 6 PM
+Friday: 9 AM – 6 PM
+Saturday: 9 AM – 6 PM
+Sunday: Closed
+
+Services:
+
+Haircut: $25, approximately 30 minutes.
+Beard trim: $15.
+
+Personality:
+
+Friendly.
+Warm.
+Conversational.
+Professional but relaxed.
+Natural spoken English.
+Short answers.
+One question at a time.
+
+Important restrictions:
+
+This is currently a demonstration.
+There is no booking calendar connected.
+Never claim appointments have been booked.
+Never invent availability.
+Never invent phone numbers or websites.
+Never request sensitive information.
+10. What Has Been Successfully Tested
+Component	Status
+Ollama	WORKING
+Qwen3.8:27B	WORKING
+Qwen ASR	WORKING
+CUDA ASR test	WORKING
+Fish Audio API	WORKING, but being removed
+Fish test generation	WORKING
+LiveKit credentials	WORKING
+LiveKit worker registration	WORKING
+Token generation	WORKING
+Node.js	WORKING
+npm	WORKING
+Vite	WORKING
+React project	CREATED
+LiveKit JavaScript SDK	INSTALLED
+Final TTS replacement	NOT DONE
+Final voice pipeline	NOT DONE
+React receptionist interface	NOT DONE
+Full browser-to-AI conversation	NOT YET VERIFIED
+11. Current Problem
+
+The latest issue:
+
+The receptionist connected, but its speech sounded Japanese or otherwise unnatural/non-English.
+
+This is likely related to the existing Fish Audio voice/model configuration.
+
+However, we already decided to remove Fish Audio completely.
+
+Do not waste time troubleshooting Fish Audio voice settings unless needed to establish a temporary comparison.
+
+The correct next step is to replace the existing FishTTS and FishStream implementation with a suitable English TTS engine.
+
+12. EXACT NEXT STEPS
+
+Please continue in this order.
+
+STEP 1 — Select a replacement TTS engine
+
+Research and recommend an English TTS engine that:
+
+Works on ARM64 Linux.
+Can run locally if practical.
+Produces natural human-like English speech.
+Integrates with Python.
+Can output PCM/WAV audio.
+Can be integrated into LiveKit's TTS interface.
+
+Consider hardware compatibility and installation requirements.
+
+Do not assume x86_64 binaries or CUDA packages will work on this machine.
+
+STEP 2 — Remove legacy speech components
+
+Once the replacement TTS works:
+
+Remove Fish Audio from the main receptionist:
+
+Remove FishAPI imports.
+Remove FishTTS.
+Remove FishStream.
+Remove Fish health checks.
+
+Remove obsolete Chatterbox and Faster-Whisper dependencies and bridge processes once nothing references them.
+
+Keep backups before deleting anything.
+
+STEP 3 — Complete LiveKit integration
+
+Final architecture:
+
+text
+CUSTOMER
+   |
+   v
+REACT FRONTEND
+   |
+   v
+LIVEKIT CLOUD
+   |
+   v
+LIVEKIT PYTHON AGENT
+   |
+   +-----------------------+
+   |                       |
+   v                       v
+QWEN3-ASR-1.7B        QWEN3.8:27B
+Speech Recognition    Conversational AI
+   |                       |
+   |                       v
+   |                 ENGLISH TTS
+   |                       |
+   +-----------------------+
+                           |
+                           v
+                    LIVEKIT AUDIO
+                           |
+                           v
+                       CUSTOMER
+
+STEP 4 — Build the React interface
+
+Finish the frontend.
+
+Use:
+
+React.
+Vite.
+livekit-client.
+
+Connect the frontend to the Python token server and LiveKit Cloud.
+
+STEP 5 — Test the complete system
+
+Test:
+
+Browser connects.
+Microphone works.
+Customer speech is recognized by Qwen ASR.
+Transcript reaches Qwen3.8.
+Qwen generates a response.
+TTS generates natural English speech.
+Audio reaches the browser.
+Customer can interrupt the receptionist.
+Multiple conversational turns work.
+13. IMPORTANT INSTRUCTIONS FOR THE NEXT AI
+
+Please follow these instructions:
+
+Do not restart the project from scratch.
+Do not reinstall working components unnecessarily.
+Do not replace Qwen3.8:27B.
+Do not replace Qwen3-ASR unless there is a compelling technical reason.
+Remove Fish Audio and Faster-Whisper from the final architecture.
+Remove Chatterbox completely from the final architecture.
+Preserve the existing LiveKit Cloud integration.
+Preserve the existing React/Vite setup.
+Give me commands one step at a time.
+Tell me exactly which terminal to use.
+When modifying Python files, provide complete replacement files rather than vague snippets.
+Check compatibility before asking me to install packages.
+Never ask me to paste API secrets into chat.
+Verify each component before proceeding to the next.
+
+I prefer a practical, step-by-step approach.
+
+Start by examining the existing livekit_receptionist.py and selecting a suitable replacement for Fish Audio. Do not rebuild the entire project.
